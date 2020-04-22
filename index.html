@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta charset="UTF-8">
+    <title>Chat Sample</title>
+</head>
+<body>
+<div id="app">
+    <v-app>
+        <v-content>
+            <v-container style="background-color: wheat; height: 100%; width: 900px">
+                <v-row>
+                    <v-col cols="3">
+                        <v-text-field label="名前" v-model="name" placeholder="input name here." />
+                    </v-col>
+                    <v-spacer></v-spacer>
+                    <v-col cols="2">
+                        <label>接続数:</label>
+                        {{ clientsCount }}
+                    </v-col>
+                </v-row>
+
+                <v-row v-for="item in messages" :justify="justify(item.socketId)">
+                    <v-col cols="6">
+                        <div>
+                            {{item.name || 'Anonymous'}}
+                            <v-card>
+                                {{ item.message }}
+                            </v-card>
+                        </div>
+                    </v-col>
+                </v-row>
+
+                <v-row >
+                    <v-col cols="9">
+                        <v-text-field dense outlined v-model="sendMessage" @keyup.enter="onSendMessage" placeholder="input message here." />
+                    </v-col>
+                    <v-col cols="3">
+                        <v-btn depressed color="primary" @click="onSendMessage">送信</v-btn>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-content>
+    </v-app>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<script>
+    const socketIo = io();
+    socketIo.on('messages', function (messages) {
+        vue.messages = messages
+    });
+    socketIo.on('clientsCount', function (clientsCount) {
+        vue.clientsCount = clientsCount
+    });
+
+    const vue = new Vue({
+        el: "#app",
+        vuetify: new Vuetify(),
+        data: {
+            name: '',
+            messages: [],
+            sendMessage: '',
+            clientsCount: null
+        },
+        computed: {
+            justify() {
+                return (socketId) => {
+                    return socketIo.id === socketId ? 'end' : 'start'
+                }
+            }
+        },
+        methods: {
+            onSendMessage() {
+                if (this.sendMessage === "") return;
+
+                const messageObj = {
+                    socketId: socketIo.id,
+                    name: this.name ?? 'Anonymous',
+                    message: this.sendMessage
+                };
+                socketIo.emit('newMessage', messageObj);
+
+                this.sendMessage = '';
+            }
+        }
+    })
+</script>
+</body>
+</html>
