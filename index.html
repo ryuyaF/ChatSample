@@ -24,7 +24,7 @@
                     </v-col>
                 </v-row>
 
-                <v-row v-for="item in messages" :justify="justify(item.socketId)">
+                <v-row v-for="item in messages" :key="item.id" :justify="justify(item.socketId)">
                     <v-col cols="6">
                         <div>
                             {{item.name || 'Anonymous'}}
