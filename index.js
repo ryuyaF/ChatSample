@@ -3,7 +3,7 @@ const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const {db} = require('./firebaseAdmin');
-
+const PORT = process.env.PORT || 5000;
 
 let messages = [];
 
@@ -29,16 +29,12 @@ io.on('connection', function (socket) {
             })
     });
 
-    socket.on('disconnect', (reason) => {
-       console.log('disconnnecteed', reason)
-    });
-
     // 接続クライアント数を送信
     io.emit('clientsCount', socket.client.conn.server.clientsCount)
 });
 
-server.listen(3000, function () {
-    console.log('listening on *:3000');
+server.listen(PORT, function () {
+    console.log('server listen ' + PORT);
 });
 
 function fetchMessages() {
